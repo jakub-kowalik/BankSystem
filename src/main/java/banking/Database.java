@@ -24,8 +24,6 @@ public class Database {
         if (!isValidTablePresent(url)) {
             repairTableStructure(url);
         }
-
-        //System.out.println(checkIfTableIsEmpty(url));
     }
 
     private void createDatabase(String url) {
@@ -89,8 +87,6 @@ public class Database {
                         while (result.next()) {
                             x = result.getBoolean(1);
                         }
-
-
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -99,7 +95,6 @@ public class Database {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-
         return x;
     }
 
@@ -108,15 +103,12 @@ public class Database {
         try (Connection conn = DriverManager.getConnection(url)) {
             if (conn != null) {
                 try (Statement statement = conn.createStatement()) {
-                    // Statement execution
                     try (ResultSet result = statement.executeQuery("SELECT COUNT(1) FROM CARD WHERE " +
                                                                    "number = " + accountNumber
                     )) {
                         while (result.next()) {
                             x = result.getBoolean(1);
                         }
-
-
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -125,7 +117,6 @@ public class Database {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-
         return x;
     }
 
@@ -134,7 +125,6 @@ public class Database {
         try (Connection conn = DriverManager.getConnection(url)) {
             if (conn != null) {
                 try (Statement statement = conn.createStatement()) {
-                    // Statement execution
                     try (ResultSet results = statement.executeQuery("SELECT balance FROM CARD WHERE " +
                                                                     "number = " + card.getCardNumber() +
                                                                     " AND pin = " + card.getPinNumber()
@@ -150,7 +140,6 @@ public class Database {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-
         return balance;
     }
 
@@ -235,7 +224,6 @@ public class Database {
 
     private void createTable(Connection conn) {
         try (Statement statement = conn.createStatement()) {
-            // Statement execution
             statement.executeUpdate(
                     "CREATE TABLE IF NOT EXISTS card(" +
                     "id INTEGER PRIMARY KEY," +
@@ -250,7 +238,6 @@ public class Database {
 
     private void dropTable(Connection conn) {
         try (Statement statement = conn.createStatement()) {
-            // Statement execution
             statement.executeUpdate(
                     "DROP TABLE card;"
             );
@@ -263,7 +250,6 @@ public class Database {
         int x = 0;
         try (Connection conn = DriverManager.getConnection(url)) {
             try (Statement statement = conn.createStatement()) {
-                // Statement execution
                 x = statement.executeUpdate(
                         "SELECT COUNT(*) FROM card;"
                 );
@@ -275,7 +261,6 @@ public class Database {
         }
         return x == 0;
     }
-
 
     private boolean isValidTablePresent(String url) {
         String[] columnsNames = {"id", "number", "pin", "balance"};
