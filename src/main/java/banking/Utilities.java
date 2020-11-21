@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class Utilities {
 
-    static String cardPre = "4000000";
+    static final String cardPre = "4000000";
 
     public static String generateCardNumber() {
         Random random = new Random();
@@ -37,19 +37,20 @@ public class Utilities {
 
     public static boolean checkLuhnCorrect(String number) {
         int sum = 0;
-        int x;
+        int digit;
         boolean alternate = false;
+
         for (int i = number.length() - 1; i >= 0; i--) {
-            x = Integer.parseInt(number.substring(i, i + 1));
+            digit = Integer.parseInt(number.substring(i, i + 1));
 
             if (alternate) {
-                x *= 2;
-                if (x > 9) {
-                    x -= 9;
+                digit *= 2;
+                if (digit > 9) {
+                    digit -= 9;
                 }
             }
 
-            sum += x;
+            sum += digit;
             alternate = !alternate;
         }
         return (sum % 10 == 0);
@@ -57,20 +58,20 @@ public class Utilities {
 
     public static int luhnAlgorithmImplementation(String number) {
         int sum = 0;
-        int x;
+        int digit;
         boolean alternate = false;
 
         for (int i = number.length() - 1; i >= 0; i--) {
-            x = Integer.parseInt(number.substring(i, i + 1));
+            digit = Integer.parseInt(number.substring(i, i + 1));
 
             if (alternate) {
-                x *= 2;
-                if (x > 9) {
-                    x -= 9;
+                digit *= 2;
+                if (digit > 9) {
+                    digit -= 9;
                 }
             }
 
-            sum += x;
+            sum += digit;
             alternate = !alternate;
         }
 

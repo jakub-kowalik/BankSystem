@@ -11,24 +11,24 @@ public class Database {
     public Database(String fileName) {
         this.url = this.url + fileName;
         this.fileName = fileName;
+
+        initializeDatabase();
     }
 
-    void initializeDatabase() {
+    private void initializeDatabase() {
 
-
-        if (!checkIfFileExists(fileName)) {
+        if (!isFilePresent(fileName)) {
             createDatabase(url);
         }
 
-        if (!checkIfTableExists(url)) {
+        if (!isValidTablePresent(url)) {
             repairTableStructure(url);
         }
 
         //System.out.println(checkIfTableIsEmpty(url));
-
     }
 
-    void createDatabase(String url) {
+    private void createDatabase(String url) {
         try (Connection conn = DriverManager.getConnection(url)) {
             if (conn != null) {
                 createTable(conn);
@@ -38,7 +38,7 @@ public class Database {
         }
     }
 
-    void repairTableStructure(String url) {
+    private void repairTableStructure(String url) {
         try (Connection conn = DriverManager.getConnection(url)) {
             if (conn != null) {
                 dropTable(conn);
@@ -49,24 +49,17 @@ public class Database {
         }
     }
 
-    public void addRecordToTable(Card card) {
+    public void addAccount(Card card) {
         String insert = "INSERT INTO CARD(number, pin) VALUES (?, ?)";
-        try (Connection conn = DriverManager.getConnection(url)) {
-            if (conn != null) {
-                try (PreparedStatement preparedStatement = conn.prepareStatement(insert)) {
-                    preparedStatement.setObject(1, card.getCardNumber());
-                    preparedStatement.setObject(2, card.getPinNumber());
-
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
+        accountOperation(card, insert);
     }
 
-    public void deleteRecordFromTable(Card card) {
+    public void deleteAccount(Card card) {
         String insert = "DELETE FROM CARD WHERE number = ? AND pin = ?";
+        accountOperation(card, insert);
+    }
+
+    private void accountOperation(Card card, String insert) {
         try (Connection conn = DriverManager.getConnection(url)) {
             if (conn != null) {
                 try (PreparedStatement preparedStatement = conn.prepareStatement(insert)) {
@@ -81,7 +74,7 @@ public class Database {
         }
     }
 
-    public boolean checkIfAccountExistInTable(Card card) {
+    public boolean isAccountPresent(Card card) {
         String number = card.getCardNumber();
         String pin = card.getPinNumber();
         boolean x = false;
@@ -90,8 +83,8 @@ public class Database {
                 try (Statement statement = conn.createStatement()) {
                     // Statement execution
                     try (ResultSet result = statement.executeQuery("SELECT COUNT(1) FROM CARD WHERE " +
-                            "number = " + number +
-                            " AND pin = " + pin
+                                                                   "number = " + number +
+                                                                   " AND pin = " + pin
                     )) {
                         while (result.next()) {
                             x = result.getBoolean(1);
@@ -110,14 +103,14 @@ public class Database {
         return x;
     }
 
-    public boolean checkIfAccountExistInTable(String accountNumber) {
+    public boolean isAccountPresent(String accountNumber) {
         boolean x = false;
         try (Connection conn = DriverManager.getConnection(url)) {
             if (conn != null) {
                 try (Statement statement = conn.createStatement()) {
                     // Statement execution
                     try (ResultSet result = statement.executeQuery("SELECT COUNT(1) FROM CARD WHERE " +
-                            "number = " + accountNumber
+                                                                   "number = " + accountNumber
                     )) {
                         while (result.next()) {
                             x = result.getBoolean(1);
@@ -136,18 +129,18 @@ public class Database {
         return x;
     }
 
-    public int checkAccountBalance(Card card) {
+    public int getAccountBalance(Card card) {
         int balance = 0;
         try (Connection conn = DriverManager.getConnection(url)) {
             if (conn != null) {
                 try (Statement statement = conn.createStatement()) {
                     // Statement execution
-                    try (ResultSet results = statement.executeQuery("SELECT * FROM CARD WHERE " +
-                            "number = " + card.getCardNumber() +
-                            " AND pin = " + card.getPinNumber()
+                    try (ResultSet results = statement.executeQuery("SELECT balance FROM CARD WHERE " +
+                                                                    "number = " + card.getCardNumber() +
+                                                                    " AND pin = " + card.getPinNumber()
                     )) {
                         while (results.next()) {
-                            balance = results.getInt(4);
+                            balance = results.getInt(1);
                         }
                     }
                 } catch (SQLException e) {
@@ -161,19 +154,17 @@ public class Database {
         return balance;
     }
 
-    public void readFromTable() {
+    public void printTableContent() {
         try (Connection conn = DriverManager.getConnection(url)) {
             if (conn != null) {
                 try (Statement statement = conn.createStatement()) {
-                    try (ResultSet greatHouses = statement.executeQuery("SELECT * FROM CARD")) {
-                        while (greatHouses.next()) {
-                            // Retrieve column values
+                    try (ResultSet result = statement.executeQuery("SELECT * FROM CARD")) {
+                        while (result.next()) {
+                            String number = result.getString("number");
+                            String pin = result.getString("pin");
+                            int balance = result.getInt("balance");
 
-                            String number = greatHouses.getString("number");
-                            String pin = greatHouses.getString("pin");
-                            int balance = greatHouses.getInt("balance");
-
-                            System.out.println(" | " + number + " | " + pin + " | " + balance + "\t | ");
+                            System.out.println(" | " + number + " | " + pin + " | " + balance + " | ");
                         }
                     }
                 } catch (SQLException e) {
@@ -219,7 +210,7 @@ public class Database {
         }
     }
 
-    public void addToBalance(Card card, int balance) {
+    public void addBalance(Card card, int balance) {
         String insert = "UPDATE card SET balance = balance + ? WHERE number = ? AND pin = ?";
         try (Connection conn = DriverManager.getConnection(url)) {
             if (conn != null) {
@@ -247,10 +238,10 @@ public class Database {
             // Statement execution
             statement.executeUpdate(
                     "CREATE TABLE IF NOT EXISTS card(" +
-                            "id INTEGER PRIMARY KEY," +
-                            "number TEXT NOT NULL," +
-                            "pin TEXT NOT NULL," +
-                            "balance INTEGER DEFAULT 0)"
+                    "id INTEGER PRIMARY KEY," +
+                    "number TEXT NOT NULL," +
+                    "pin TEXT NOT NULL," +
+                    "balance INTEGER DEFAULT 0)"
             );
         } catch (SQLException e) {
             e.printStackTrace();
@@ -268,7 +259,7 @@ public class Database {
         }
     }
 
-    private boolean checkIfTableIsEmpty(String url) {
+    private boolean isTableEmpty(String url) {
         int x = 0;
         try (Connection conn = DriverManager.getConnection(url)) {
             try (Statement statement = conn.createStatement()) {
@@ -286,7 +277,7 @@ public class Database {
     }
 
 
-    private boolean checkIfTableExists(String url) {
+    private boolean isValidTablePresent(String url) {
         String[] columnsNames = {"id", "number", "pin", "balance"};
         try (Connection conn = DriverManager.getConnection(url)) {
             if (conn != null) {
@@ -308,7 +299,6 @@ public class Database {
                     }
 
                     return true;
-
                 } else {
                     return false;
                 }
@@ -319,7 +309,7 @@ public class Database {
         return false;
     }
 
-    private boolean checkIfFileExists(String fileName) {
+    private boolean isFilePresent(String fileName) {
         File file = new File(fileName);
         return file.isFile();
     }

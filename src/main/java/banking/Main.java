@@ -19,8 +19,6 @@ public class Main {
 
         Database database = new Database(fileName);
 
-        database.initializeDatabase();
-
         View view = new View();
         Controller controller = new Controller(view, database);
 
